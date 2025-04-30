@@ -6,7 +6,7 @@ from io import BytesIO
 import requests
 import os
 
-# Inserisci qui il tuo HuggingFace API token
+# Legge la chiave HuggingFace dal secret
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN") or "INSERISCI_LA_TUA_CHIAVE"
 
 API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
@@ -14,8 +14,11 @@ headers = {"Authorization": f"Bearer {HUGGINGFACE_TOKEN}"}
 
 def query(payload):
     response = requests.post(API_URL, headers=headers, json=payload)
+    st.code(f"DEBUG Response status: {response.status_code}", language="text")
     try:
-        return response.json()[0]["generated_text"]
+        result = response.json()
+        st.code(result, language="json")
+        return result[0]["generated_text"]
     except Exception as e:
         st.error(f"Errore nella risposta HuggingFace: {e}")
         return None
@@ -48,33 +51,30 @@ Testo:
         return None
 
 def main():
-    st.set_page_config(page_title="Estrazione Estratti Conto HuggingFace", layout="centered")
-    st.title("📄 Estrazione Estratti Conto (modello Mistral via HuggingFace)")
-    st.markdown("Carica uno o più file PDF. I dati verranno estratti con un modello open source gratuito.")
+    st.set_page_config(page_title="Estrazione Estratti Conto (DEBUG)", layout="centered")
+    st.title("📄 DEBUG - Estrazione Estratti Conto via HuggingFace")
+    uploaded_files = st.file_uploader("Carica PDF", type="pdf", accept_multiple_files=True)
 
-    uploaded_files = st.file_uploader("Carica i PDF", type="pdf", accept_multiple_files=True)
-
-    if uploaded_files and st.button("Estrai dati e genera Excel"):
+    if uploaded_files and st.button("Estrai dati"):
         risultati = []
         for file in uploaded_files:
-            st.info(f"🧾 Elaborazione: {file.name}")
+            st.info(f"Elaboro: {file.name}")
             testo = estrai_testo_da_pdf(file)
             dati = estrai_dati_con_huggingface(testo)
             if dati:
                 dati["File"] = file.name
                 risultati.append(dati)
             else:
-                st.warning(f"Nessun dato estratto da {file.name}")
+                st.warning("Nessun dato estratto.")
 
         if risultati:
             df = pd.DataFrame(risultati)
             excel_file = BytesIO()
             df.to_excel(excel_file, index=False)
             excel_file.seek(0)
-            st.success("✅ Excel generato con successo!")
-            st.download_button("📥 Scarica Excel", data=excel_file, file_name="estratti_conto_huggingface.xlsx")
+            st.download_button("📥 Scarica Excel", data=excel_file, file_name="estratti_debug.xlsx")
         else:
-            st.warning("❌ Nessun dato è stato estratto da nessun file.")
+            st.warning("❌ Nessun risultato ottenuto.")
 
 if __name__ == "__main__":
     main()
