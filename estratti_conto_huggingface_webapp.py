@@ -1,4 +1,3 @@
-
 import streamlit as st
 import fitz  # PyMuPDF
 import pandas as pd
@@ -7,7 +6,6 @@ from io import BytesIO
 import requests
 import os
 
-# Inserisci qui il tuo HuggingFace API token
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN") or "INSERISCI_LA_TUA_CHIAVE"
 
 API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
