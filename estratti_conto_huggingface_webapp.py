@@ -6,15 +6,16 @@ from io import BytesIO
 import requests
 import os
 
-# Legge la chiave HuggingFace dal secret
+# Token da HuggingFace (inserito nei secrets)
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN") or "INSERISCI_LA_TUA_CHIAVE"
 
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+# Modello HuggingFace leggero (7B compatibile)
+API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
 headers = {"Authorization": f"Bearer {HUGGINGFACE_TOKEN}"}
 
 def query(payload):
     response = requests.post(API_URL, headers=headers, json=payload)
-    st.code(f"DEBUG Response status: {response.status_code}", language="text")
+    st.code(f"DEBUG status: {response.status_code}", language="text")
     try:
         result = response.json()
         st.code(result, language="json")
@@ -51,8 +52,8 @@ Testo:
         return None
 
 def main():
-    st.set_page_config(page_title="Estrazione Estratti Conto (DEBUG)", layout="centered")
-    st.title("📄 DEBUG - Estrazione Estratti Conto via HuggingFace")
+    st.set_page_config(page_title="Estrazione Estratti Conto (Zephyr)", layout="centered")
+    st.title("📄 Estrazione Estratti Conto - modello Zephyr via HuggingFace")
     uploaded_files = st.file_uploader("Carica PDF", type="pdf", accept_multiple_files=True)
 
     if uploaded_files and st.button("Estrai dati"):
@@ -72,7 +73,7 @@ def main():
             excel_file = BytesIO()
             df.to_excel(excel_file, index=False)
             excel_file.seek(0)
-            st.download_button("📥 Scarica Excel", data=excel_file, file_name="estratti_debug.xlsx")
+            st.download_button("📥 Scarica Excel", data=excel_file, file_name="estratti_conto_zephyr.xlsx")
         else:
             st.warning("❌ Nessun risultato ottenuto.")
 
